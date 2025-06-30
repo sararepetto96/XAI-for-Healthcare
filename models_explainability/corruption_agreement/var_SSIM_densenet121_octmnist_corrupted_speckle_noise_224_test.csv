@@ -1,0 +1,9 @@
+,0
+IntegratedGradients,0.0081
+Saliency,0.0147
+DeepLift,0.0050
+InputXGradient,0.0167
+GradCAM,0.0096
+SmoothGrad,0.0148
+GradCAM_plusplus,0.0041
+FinerCAM,0.0118

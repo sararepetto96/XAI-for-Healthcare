@@ -1,0 +1,18 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Script",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "run_attack.py",
+            "console": "integratedTerminal",
+            //"args": ["--action", "download_attributions", "--base_model_folder", "MedViT", "--model_folder", "dermamnist_224"]
+            //"args": ["--data_name", "octmnist", "--corruption", "--prepare_data", "--no-download_model", "--no-fine_tune"]
+            "args": ["--model_name", "resnet50", "--train_data_name", "pneumoniamnist_224", "--n_classes", "2", "--data_name", "pneumoniamnist_224", "--algorithm", "GradCAM", "--epsilon", "2", "--batch_size", "1", "--n_step", "10"]
+        }
+    ]
+}
