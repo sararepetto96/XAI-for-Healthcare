@@ -66,4 +66,4 @@ This project has been partially developed with the support of European Union’s
 
 <img src="git_images/sec4AI4sec.png" alt="sec4ai4sec" style="width:70px;"/> &nbsp;&nbsp; 
 <img src="git_images/elsa.png" alt="elsa" style="width:70px;"/> &nbsp;&nbsp; 
-<img src="git_images/FundedbyEU.png" alt="europe" style="width:a240px;" />
+<img src="git_images/FundedbyEU.png" alt="europe" style="width:240px;" />
