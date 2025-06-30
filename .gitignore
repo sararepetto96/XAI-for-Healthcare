@@ -1,9 +1,9 @@
-/models/MedViT/__pycache__
+/models/finetuning/__pycache__
 
 /models_training/__pycache__
-/models_training/MedViT/__pycache__
+/models_training/MedVit/__pycache__
 /models_training/data
-/models_training/MedViT/pretrained/*
+/models_training/MedVit/pretrained/*
 /models_training/*/output/*
 
 /models_explainability/__pycache__

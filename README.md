@@ -16,7 +16,7 @@ The environment can be installed by running the following command:
 ```shell
 conda env create -f environment.yml
 ```
-Once the environment is created, we can use it by typing `conda activate MedViT`.
+Once the environment is created, we can use it by typing `conda activate XAI-for-Healthcare`.
 
 ## Code Folding
 

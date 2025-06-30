@@ -18,8 +18,10 @@ from engine import train_one_epoch, evaluate
 from losses import DistillationLoss
 from samplers import RASampler
 import utils
-import MedViT 
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+from models_explainability import MedViT, ViT
 
 
 def get_args_parser():

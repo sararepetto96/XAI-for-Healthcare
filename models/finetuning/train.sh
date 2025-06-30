@@ -17,7 +17,14 @@ else
 fi
 
 # Pick a random port
-export MASTER_PORT=$(expr 10000 + $(echo -n $SLURM_JOBID | tail -c 4))
+if [ -z "$SLURM_JOBID" ]; then
+    echo "SLURM_JOBID is not set, using a random port."
+    export MASTER_PORT=$(expr 10000 + $RANDOM % 1000)
+else
+    echo "SLURM_JOBID is set to $SLURM_JOBID, using it to determine the port."
+    export MASTER_PORT=$(expr 10000 + $(echo -n $SLURM_JOBID | tail -c 4))
+fi
+
 export MASTER_ADDR=localhost  # Ensures it's bound to local machine
 
 echo $MASTER_ADDR $MASTER_PORT

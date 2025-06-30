@@ -7,26 +7,20 @@ import torch
 from torch import nn
 import numpy as np
 from torch.utils.data import DataLoader, Subset
-import torch.nn.functional as F
 from tqdm import tqdm, trange
-import warnings
 import gc
 from captum import attr
-from .custom_XAI import Saliency_with_grad, GuidedBackProp_with_grad, GradCAM_with_grad, NoiseTunnel_with_grad,SmoothGrad,ScoreCAM_with_grad, XGradCAM_with_grad, GradCAM_plus_plus_with_grad,FinerCAM
-#from .FullGrad import FullGrad
-from .vit_grad_rollout import VITAttentionGradRollout
-from typing import Optional, Tuple, List, Dict, Union
+from .custom_XAI import Saliency_with_grad, GuidedBackProp_with_grad, GradCAM_with_grad,SmoothGrad,ScoreCAM_with_grad, GradCAM_plus_plus_with_grad,FinerCAM
+from typing import Optional, Tuple, List, Dict
 from adv_lib.utils.visdom_logger import VisdomLogger
 from adv_lib.utils.projections import clamp_
 import os
-import pickle
 from timm.models import create_model
-from multiprocessing import Pool, get_context
+from multiprocessing import get_context
 
 from torchvision import transforms
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
-from abc import ABC, abstractmethod
 from . import MedViT,ViT
 from .MedDataset import MedDataset
 
@@ -35,7 +29,6 @@ from PIL.Image import Image
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from pytorch_grad_cam.activations_and_gradients import ActivationsAndGradients
 
 from .agreement import image_density_agreement, SSIM, l2_distance
 
@@ -44,9 +37,7 @@ import time
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget, FinerWeightedTarget
 from lxt.efficient import monkey_patch, monkey_patch_zennit
 from lxt.efficient.patches import patch_method
-from lxt.efficient.models.vit_torch import cp_LRP
 import matplotlib.pyplot as plt
-import torch.nn.functional as F
 
 from lxt.efficient.patches import non_linear_forward, layer_norm_forward
 
@@ -225,33 +216,17 @@ class ExplainableModel():
         
         self.__load_model(model_path, n_classes)
         
-        self.available_algorithms = ["IntegratedGradients", 
-                                     "Saliency", 
-                                     "DeepLift", 
-                                     #"DeepLiftShap", "GradientShap",
-                                     "InputXGradient", 
-                                     "GuidedBackprop", 
-                                     #"GuidedGradCam", 
-                                     #"Deconvolution",
-                                     #"FeatureAblation", #"Occlusion",
-                                     #"FeaturePermutation", "ShapleyValueSampling",
-                                     #"Lime", "KernelShap", 
-                                     #"LRP",
-                                    
-                                    "SmoothGrad-Saliency", 
-                                    "SmoothGrad-InputXGradient",
-                                    "SmoothGrad-IntegratedGradients",
-                                    "SmoothGrad-DeepLift",
-                                    
-                                    "GradCAM", 
-                                    "lxt",
-                                    "Grad_roolout",
+        self.available_algorithms = [
+                                    "IntegratedGradients", 
+                                    "Saliency", 
+                                    "DeepLift", 
+                                    "InputXGradient", 
+                                    "GradCAM",
                                     "SmoothGrad",
-                                    "ScoreCAM",
-                                    'XGradCAM',
-                                    #'EigenCAM',
                                     'GradCAM_plusplus',
                                     'FinerCAM',
+                                    
+                                    "lxt",
                                     'LibraGRAD'
                                         ]
         
@@ -270,7 +245,7 @@ class ExplainableModel():
             model_name = "MedViT_large"
         else:
             model_name = self.model_name
-       
+
         self.model : torch.nn.Module = create_model(model_name, num_classes=n_classes)  
             
         checkpoint_model = torch.load(model_path)["model"]
@@ -364,7 +339,7 @@ class ExplainableModel():
                 return m.conv
 
     def applyXAI(self, algorithm: str, input_tensor: torch.Tensor,
-                   target_classes: torch.Tensor, post_processing=False) -> torch.Tensor:
+                target_classes: torch.Tensor, post_processing=False) -> torch.Tensor:
         
         assert algorithm in self.available_algorithms, f"Invalid algorithm {algorithm}, choose from {self.available_algorithms}"
         
@@ -373,11 +348,6 @@ class ExplainableModel():
             assert (self.is_model_lxt_patched), "lxt/LibraGRAD algorithm requires the model to be patched with lxt monkey patching, please call patch_model_lxt() before using it"
         else:
             assert (not self.is_model_lxt_patched), f"{algorithm} doesn't need to be patched, please reinitialize object"
-
-
-        #DeepLiftShap, GradientShap requires baseline ??? What to use as baseline?
-        #Occlusion requires a sliding window size??? What to use as window size?
-        #LRP gives an error
         
         input_tensor=input_tensor.cuda()
         target_classes=target_classes.cuda()
@@ -398,117 +368,10 @@ class ExplainableModel():
             method = attr.DeepLift(self.model)
             attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes)
         
-        elif algorithm == "DeepLiftShap":
-            
-            raise NotImplementedError("DeepLiftShap not implemented")
-        
-        elif algorithm == "GradientShap":
-            
-            raise NotImplementedError("GradientShap not implemented")
-        
         elif algorithm == "InputXGradient":
             
             method = attr.InputXGradient(self.model)
             attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes)
-        
-        elif algorithm == "GuidedBackprop":
-            
-            method = GuidedBackProp_with_grad(self.model)
-            attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes)
-        
-        elif algorithm == "GuidedGradCam":
-            
-            raise NotImplementedError("GuidedGradCam not implemented")
-        
-            method = attr.GuidedGradCam(self.model, self.__get_target_layer_GradCAM())
-            attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes,
-                                            attribute_to_layer_input=False)
-        
-        elif algorithm == "Deconvolution":
-            
-            raise NotImplementedError("Deconvolution not implemented")
-        
-            method = attr.Deconvolution(self.model)
-            attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes)
-        
-        elif algorithm == "FeatureAblation":
-            
-            raise NotImplementedError("FeatureAblation not implemented")
-            
-            method = attr.FeatureAblation(self.model.forward)
-            attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes, show_progress=True)
-        
-        elif algorithm == "Occlusion":
-            
-            raise NotImplementedError("Occlusion not implemented")
-        
-        elif algorithm == "FeaturePermutation":
-            
-            raise NotImplementedError("FeaturePermutation not implemented")
-            
-            method = attr.FeatureAblation(self.model)
-            attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes, show_progress=True)
-        
-        elif algorithm == "ShapleyValueSampling":
-            
-            raise NotImplementedError("ShapleyValueSampling not implemented")
-        
-            method = attr.ShapleyValueSampling(self.model)
-            attributions = method.attribute(input_tensor, feature_mask=ExplainableModel.get_feature_mask().cuda(),
-                                            target=target_classes, show_progress=True)
-        
-        elif algorithm == "Lime":
-
-            raise NotImplementedError("Lime not implemented")
-        
-            method = attr.Lime(self.model)
-            attributions = method.attribute(input_tensor, feature_mask=ExplainableModel.get_feature_mask().cuda(),
-                                            target=target_classes)
-
-        elif algorithm == "KernelShap":
-
-            raise NotImplementedError("KernelShap not implemented")
-        
-            method = attr.KernelShap(self.model)
-            attributions = method.attribute(input_tensor, target=target_classes,
-                                            feature_mask=ExplainableModel.get_feature_mask().cuda())
-            
-        elif algorithm == "LRP":
-            
-            raise NotImplementedError("LRP not implemented")
-            
-            method = attr.LRP(self.model)
-            attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes)
-            
-        elif algorithm == "SmoothGrad-Saliency":
-        
-            method = NoiseTunnel_with_grad(Saliency_with_grad(self.model))
-            
-            #probably it is not differentiable, so we will need to rewrite it...
-            attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes)
-
-        elif algorithm == "SmoothGrad-InputXGradient":
-        
-            method = NoiseTunnel_with_grad(attr.InputXGradient(self.model))
-            
-            #probably it is not differentiable, so we will need to rewrite it...
-            attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes)
-        
-        elif algorithm == "SmoothGrad-IntegratedGradients":
-        
-            method = NoiseTunnel_with_grad(attr.IntegratedGradients(self.model))
-            
-            #probably it is not differentiable, so we will need to rewrite it...
-            attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes)
-        
-        elif algorithm == "SmoothGrad-DeepLift":
-            
-            method = NoiseTunnel_with_grad(attr.DeepLift(self.model))
-            
-            #probably it is not differentiable, so we will need to rewrite it...
-            attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes, 
-                                            nt_samples=500,
-                                            nt_samples_batch_size=1)
 
         elif algorithm == "GradCAM":
             
@@ -530,34 +393,6 @@ class ExplainableModel():
             # Get relevance at *ANY LAYER* in your model. Simply multiply the gradient * activation!
             # here for the input embeddings:
             attributions = (grads * input_tensor)
-        
-        
-        elif algorithm =='Grad_roolout':
-
-            input_tensor.requires_grad_()
-            grad_rollout = VITAttentionGradRollout(self.model, discard_ratio=0.9)
-             # For each sample in batch, compute gradient of output w.r.t input
-            attributions = []
-
-            for i in range(input_tensor.shape[0]):
-    
-   
-                mask = grad_rollout(input_tensor[i], target_classes[i])  # (1, 1, h, w)
-
-                # Upsample mask to 224x224 (same as input image)
-                input_shape = input_tensor[i].shape[1]  # 224
-                mask_shape = mask.shape[2]              # e.g., 14
-                scale = input_shape / mask_shape        # e.g., 16
-                mask = F.interpolate(mask, scale_factor=scale, mode='bilinear', align_corners=False)  # (1, 1, 224, 224)
-
-                # Expand to 3 channels by copying values across channels
-                mask = mask.expand(-1, 3, -1, -1)  # (1, 3, 224, 224)
-
-                # Append to list (no torch.tensor(), keep computation graph intact)
-                attributions.append(mask)
-
-            # Concatenate all masks into a batch
-            attributions = torch.cat(attributions, dim=0) 
 
         elif algorithm == "SmoothGrad":
             method = SmoothGrad(self.model)
@@ -566,10 +401,6 @@ class ExplainableModel():
         elif algorithm == "ScoreCAM":
             
             attributions = self.CAM_like_procedure(ScoreCAM_with_grad, input_tensor, target_classes)
-
-        elif algorithm == 'XGradCAM':
-
-            attributions = self.CAM_like_procedure(XGradCAM_with_grad, input_tensor, target_classes)
 
         elif algorithm == "GradCAM_plusplus":
             
@@ -867,7 +698,6 @@ class ExplainableModel():
                 ("Saliency", self.explain_dataset("Saliency", data_name, data_split, batch_size=8, new_process=True)),
                 ("DeepLift", self.explain_dataset("DeepLift", data_name, data_split, batch_size=4)),
                 ("InputXGradient", self.explain_dataset("InputXGradient", data_name, data_split, batch_size=16)),
-                #("GuidedBackprop", self.explain_dataset("GuidedBackprop", data_name, data_split, batch_size=8, new_process=True)),
                 
                 ("GradCAM", self.explain_dataset("GradCAM", data_name, data_split, batch_size=4, new_process=True)),
                 ("SmoothGrad", self.explain_dataset("SmoothGrad", data_name, data_split, batch_size=2, new_process=False)),
@@ -880,7 +710,7 @@ class ExplainableModel():
                 ("lxt", self.explain_dataset("lxt", data_name, data_split, batch_size=4, new_process=False)),
                 ("LibraGRAD", self.explain_dataset("LibraGRAD", data_name, data_split, batch_size=4, new_process=False)),
             ]
-             
+            
             return [x for x in to_return if x is not None]
         
         if self.is_transformer:
@@ -1020,7 +850,7 @@ class ExplainableModel():
                     metrics, adv_inputs, adversarial_expl = r.get()
                 else:
                     metrics, adv_inputs, adversarial_expl  = pgd_linf(i, len(dataloader), inputs, labels, names, algorithm, ε, self, n_steps, lr,
-                                       expl_loss_function, loss_function)
+                                                                        expl_loss_function, loss_function)
                 
                 torch.cuda.empty_cache()
                     
@@ -1149,13 +979,13 @@ def pgd_linf(
         accuracy_corrupted = torch.sum(adv_pred_labels == labels)/len(inputs)
         
         metrics={"accuracy_original": accuracy_original.detach().cpu().tolist(), 
-                 "accuracy_perturbed": accuracy_corrupted.detach().cpu().tolist(),
-                 "l2": [],
-                 "SSIM": [],
-                 "agreement": [],
-                 "epoch_loss": epoch_loss.tolist(),
-                 "cross_entropy": cross_entropy.tolist(),
-                 "explanation_loss": explanation_loss.tolist()}
+                    "accuracy_perturbed": accuracy_corrupted.detach().cpu().tolist(),
+                    "l2": [],
+                    "SSIM": [],
+                    "agreement": [],
+                    "epoch_loss": epoch_loss.tolist(),
+                    "cross_entropy": cross_entropy.tolist(),
+                    "explanation_loss": explanation_loss.tolist()}
         
         for original, adversarial in zip(original_expl, adversarial_expl):
             
@@ -1207,7 +1037,6 @@ def _pgd_linf(
         batch_size = len(inputs)
         batch_view = lambda tensor: tensor.view(batch_size, *[1] * (inputs.ndim - 1))
         lower, upper = torch.maximum(-inputs, -batch_view(ε)), torch.minimum(1 - inputs, batch_view(ε))
-       
         
         δ = torch.zeros_like(inputs, requires_grad=True)
         best_adv = inputs.clone()
@@ -1220,17 +1049,17 @@ def _pgd_linf(
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=n_steps, eta_min= lr/ 10)
         logits = model(inputs)
         pred_labels = logits.argmax(1)
-      
+
         original_expl = explainableModel.applyXAI(algorithm=method, input_tensor = inputs, target_classes = pred_labels, post_processing=True) #maybe we can load them from file
         n = int(inputs.shape[2]//np.sqrt(10))
         target_expl = torch.zeros((1,224,224))
         target_expl[:,:n,:n] = torch.full((1,n,n),1)     
-           
+        
         target_expls = ((target_expl.unsqueeze(0), ) * batch_size)
         target=torch.concat((target_expls)).reshape(original_expl.shape).float()
         #target=torch.concat((target_expls)).reshape(original_expl.shape).double()
         target=target.to('cuda:0')
-       
+    
         
         epoch_loss = []
         cross_entropy = []

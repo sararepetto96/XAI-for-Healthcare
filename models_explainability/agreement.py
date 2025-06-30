@@ -11,7 +11,6 @@ from scipy.spatial.distance import jensenshannon
 from scipy.stats import wasserstein_distance, wasserstein_distance_nd
 from scipy.signal import correlate2d
 from pytorch_msssim import ssim
-from .Metrics import consistency
 from tqdm import tqdm
 
 def attributions_check(attributions_a: np.ndarray, attributions_b: np.ndarray):

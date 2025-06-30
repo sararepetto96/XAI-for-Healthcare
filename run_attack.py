@@ -12,15 +12,15 @@ if __name__ == "__main__":
 
     
     argparser = argparse.ArgumentParser(description='Run attack on model')
-    argparser.add_argument('--model_name', type=str, help='model name')
+    argparser.add_argument('--model_name', type=str, help='model name', required=True)
     
-    argparser.add_argument('--train_data_name', type=str, help='data name')
-    argparser.add_argument('--n_classes', type=int, help='number of classes')
+    argparser.add_argument('--train_data_name', type=str, help='data name', required=True)
+    argparser.add_argument('--n_classes', type=int, help='number of classes', required=True)
     
-    argparser.add_argument("--data_name", type=str, help='data name to run the attack on')
-    argparser.add_argument("--algorithm", type=str, help='algorithm to use')
+    argparser.add_argument("--data_name", type=str, help='data name to run the attack on', required=True)
+    argparser.add_argument("--algorithm", type=str, help='algorithm to use', required=True)
     
-    argparser.add_argument("--epsilon", type=int, help='epsilon for the attack')
+    argparser.add_argument("--epsilon", type=int, help='epsilon for the attack', required=True)
     argparser.add_argument("--batch_size", type=int, help='batch size for the attack',default=8)
     argparser.add_argument("--n_steps", type=int, help='number of steps for the attack', default=100)
     argparser.add_argument('--dataset_subset_size', type=int, default=100, help='size of the dataset subset to use for the attack')
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     
     explainableModel = ExplainableModel(model_name = args.model_name,
                                     train_data_name = args.train_data_name,
-                                     n_classes = args.n_classes)
+                                    n_classes = args.n_classes)
     try:
         explainableModel.attack(algorithm=args.algorithm,
                                                     data_name=args.data_name,

@@ -11,15 +11,15 @@ if __name__ == "__main__":
     print("working in: ",os.getcwd())
     
     argparser = argparse.ArgumentParser(description='Run attack on model')
-    argparser.add_argument('--model_name', type=str, help='model name')
+    argparser.add_argument('--model_name', type=str, help='model name', required=True)
     
-    argparser.add_argument('--train_data_name', type=str, help='data name')
-    argparser.add_argument('--n_classes', type=int, help='number of classes')
+    argparser.add_argument('--train_data_name', type=str, help='data name',required=True)
+    argparser.add_argument('--n_classes', type=int, help='number of classes',required=True)
     
-    argparser.add_argument("--data_name", type=str, help='data name to run the attack on')
-    argparser.add_argument("--algorithm", type=str, help='algorithm to use', default=None)
+    argparser.add_argument("--data_name", type=str, help='data name to run the attack on', required=True)
+    argparser.add_argument("--algorithm", type=str, help='algorithm to use. Default: calculate all attributions.', default=None)
     
-    argparser.add_argument("--batch_size", type=int, help='batch size for the attack')
+    argparser.add_argument("--batch_size", type=int, help='batch size for the attack', required=True)
     
     argparser.add_argument('--new_process', action='store_true', help='run in a new process')
     
