@@ -33,7 +33,7 @@ The code is structured as follows:
 - **run_natural_noise.py**: Main script to launch natural noise experiments.
 
 
-### Running Experiments 
+## Running Experiments 
 To perform an attach to a model, with a specific budget, a specifict explanation method and a specific dataset, you can use:
 
 ```shell
@@ -56,7 +56,7 @@ python run_natural_noise.py --run_all
 
 to run all experiments.
 
-After having executed the main function, a folder structure inside **models_explainability/corruption_agreement**" will be created containing csv files with results.
+After having executed the main function, a folder structure inside **models_explainability/corruption_agreement** will be created containing csv files with results.
 
 
 ## Acknowledgements
