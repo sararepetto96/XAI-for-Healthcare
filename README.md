@@ -1,6 +1,6 @@
 # Evaluating the Robustness of Explainable AI in Medical Image Recognition Under Natural and Adversarial Data Corruption
 
-This repository contains the official PyTorch implementation for the paper:**Evaluating the Robustness of Explainable AI in Medical Image Recognition Under Natural and Adversarial Data Corruption**. 
+This repository contains the official PyTorch implementation for the paper: **Evaluating the Robustness of Explainable AI in Medical Image Recognition Under Natural and Adversarial Data Corruption**. 
 
 
 ## Dependencies and Reproducibility
@@ -34,7 +34,7 @@ The code is structured as follows:
 
 
 ## Running Experiments 
-To perform an attach to a model, with a specific budget, a specifict explanation method and a specific dataset, you can use:
+To perform an attack to a model, with a specific budget, a specific explanation method and a specific dataset, you can use:
 
 ```shell
 python run_attack.py --model_name model --train_data_name dataset --n_classes classes --data_name dataset --algorithm XAI_technique --epsilon budget
