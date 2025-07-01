@@ -60,10 +60,9 @@ After having executed the main function, a folder structure inside **models_expl
 
 
 ## Acknowledgements
-The authors would like to thank the contributors of [captum](https://github.com/pytorch/captum) and [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam) for having facilitated the development of this project.
+ The authors would like to thank the contributors of [captum](https://github.com/pytorch/captum) and [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam) for having facilitated the development of this project.
+This work has been partially supported by project FISA-2023-00128 funded by the MUR program “Fondo italiano per le scienze applicate”; the EU—NGEU National Sustainable Mobility Center (CN00000023), Italian Ministry of University and Research Decree n. 1033—17/06/2022 (Spoke 10); the project Sec4AI4Sec, under the EU’s Horizon Europe Research and Innovation Programme (grant agreement no.101120393); and projects SERICS (PE00000014) and FAIR (PE0000013) under the MUR NRRP funded by the EU—NGEU.
 
-This project has been partially developed with the support of European Union’s [ELSA – European Lighthouse on Secure and Safe AI](https://elsa-ai.eu), Horizon Europe, grant agreement No. 101070617, and [Sec4AI4Sec - Cybersecurity for AI-Augmented Systems](https://www.sec4ai4sec-project.eu), Horizon Europe, grant agreement No. 101120393.
-
-<img src="git_images/sec4AI4sec.png" alt="sec4ai4sec" style="width:70px;"/> &nbsp;&nbsp; 
+<!--img <src="git_images/sec4AI4sec.png" alt="sec4ai4sec" style="width:70px;"/> &nbsp;&nbsp; 
 <img src="git_images/elsa.png" alt="elsa" style="width:70px;"/> &nbsp;&nbsp; 
-<img src="git_images/FundedbyEU.png" alt="europe" style="width:240px;" />
+<img src="git_images/FundedbyEU.png" alt="europe" style="width:240px;" />-->
