@@ -22,12 +22,12 @@ The code is structured as follows:
 - **model_explainability/ActivationsAndGradients**: A modified version of pytorch-grad-cam, adapted to allow differentiable computation of explanations.
 - **model_explainability/agreement**: Useful function to compute similarity between explanations.
 - **model_explainability/custom_XAI**: Core utilities for applying various explanation (XAI) techniques.
--**model_explainability/ExplainableModels**: Functions to load datasets and models, generate explanations, and execute adversarial attacks.
+- **model_explainability/ExplainableModels**: Functions to load datasets and models, generate explanations, and execute adversarial attacks.
 - **models_explainability/MedDataset.py**: Code for creating and handling a custom data loader for medmnist.
 - **models_explainability/patches**: A helpet function to support explanation techniques on transformer-based architectures.
 - **models_explainability/test_agreements.py**: Main functions for evaluating explanation robustness under natural data corruption.
-- **models_explainability/MedViT.py**: Useful functions to built the MedViT model ( Manzari, Omid Nejati, et al. "MedViT: a robust vision transformer for generalized medical image classification." Computers in biology and medicine 157 (2023): 106791.) in timm. 
-- **models_explainability/ViT.py**: Adapted version of the ViT model from timm, tailored to integrate seamlessly with explanation methods.
+- **models_explainability/MedViT.py**: Useful functions to built the MedViT model ( Manzari, Omid Nejati, et al. "MedViT: a robust vision transformer for generalized medical image classification." Computers in biology and medicine 157 (2023): 106791.) in the timm library. 
+- **models_explainability/ViT.py**: Adapted version of the ViT model from the timm library, tailored to integrate seamlessly with explanation methods.
 - **fine_tune.py**: Main script to download datasets (clean and corrupted) and finetuning models.
 - **run_attack.py**: Main script to launch adversarial attacks targeting model explanations.
 - **run_natural_noise.py**: Main script to launch natural noise experiments.

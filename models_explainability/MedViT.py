@@ -424,9 +424,6 @@ class LTB(nn.Module):
         self.norm2 = norm_func(out_channels)
         self.conv = LocalityFeedForward(out_channels, out_channels, 1, mlp_ratio, reduction=out_channels)
 
-        #self.mlp = Mlp(out_channels, mlp_ratio=mlp_ratio, drop=drop)
-        #self.mlp_path_dropout = DropPath(path_dropout)
-
         self.is_bn_merged = False
 
     def merge_bn(self):
@@ -455,7 +452,7 @@ class LTB(nn.Module):
         else:
             out = x
         x = x + self.conv(out)
-        #x = x + self.mlp_path_dropout(self.mlp(out))
+    
         return x
 
 

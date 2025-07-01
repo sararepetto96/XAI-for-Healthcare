@@ -323,14 +323,12 @@ class ExplainableModel():
         )
 
         self.model.cpu()
-        breakpoint()
-        
+    
         return accuracy, len(data), auroc, f1_score
 
     
     def __get_target_layer_GradCAM_MedViT(self) -> torch.nn.Module:
         
-        #print(self.model.modules())
         
         for (i, m) in enumerate(self.model.model.modules()):
             
@@ -359,7 +357,6 @@ class ExplainableModel():
             
         elif algorithm == "Saliency":
 
-            #input_tensor.requires_grad_().retain_grad()
             method = Saliency_with_grad(self.model)
             attributions = method.attribute(input_tensor.requires_grad_(), target=target_classes)
         
@@ -1057,7 +1054,6 @@ def _pgd_linf(
         
         target_expls = ((target_expl.unsqueeze(0), ) * batch_size)
         target=torch.concat((target_expls)).reshape(original_expl.shape).float()
-        #target=torch.concat((target_expls)).reshape(original_expl.shape).double()
         target=target.to('cuda:0')
     
         
@@ -1083,18 +1079,14 @@ def _pgd_linf(
             cls_loss =  multiplier * loss_func(adv_logits, pred_labels)
 
             tot_loss = (cls_loss.cuda() + loss_expl.cuda()).mean()
-            #tot_loss = (loss_expl).mean()
-            #print(tot_loss.item(), flush=True)
-            #print(cls_loss.mean().item(),loss_expl.mean().item(), flush=True)
-
+        
             tot_loss.backward(retain_graph=True)
-            #δ.grad[δ.grad!=0]
-            
+           
             optimizer.step()
             scheduler.step()
         
             is_clean = (adv_logits.argmax(1) == pred_labels)
-            ##non faccio alcun check sul fatto che sia adversarial, non so se sia ok
+        
             if tot_loss < best_loss:
 
                 best_adv = torch.where(batch_view(is_clean), x_adv.detach(), best_adv)
@@ -1118,7 +1110,7 @@ def _pgd_linf(
             torch.cuda.empty_cache()
         
         if False: # True: #if you want to save the plots
-            # Crea una figura con 3 sottografici (3 righe, 1 colonna)
+            # Create a figure with 3 subgraphs (3 rows, 1 column)
             fig, axs = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
             epochs = list(range(1, len(epoch_loss) + 1))
 
@@ -1147,9 +1139,6 @@ def _pgd_linf(
             plt.savefig('training_subplots.png')
             plt.close()
             
-            
-            
-        
             
         epoch_loss = torch.tensor([torch.tensor(elem) for elem in epoch_loss])
         cross_entropy = torch.tensor([torch.tensor(elem) for elem in cross_entropy])

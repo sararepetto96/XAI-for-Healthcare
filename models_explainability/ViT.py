@@ -91,21 +91,21 @@ from timm.models import create_model
 @register_model
 
 def custom_vit_base_patch16_224(pretrained=False, **kwargs):
-    # Elimina parametri che non servono al tuo modello custom
+    # Eliminate parameters that do not serve your custom model
     kwargs.pop('pretrained_cfg', None)
     kwargs.pop('pretrained_cfg_overlay', None)
     kwargs.pop('cache_dir', None)
-    # Carica il modello MAE base con i pesi (senza modificarlo)
+    # Upload the basic ViT model with weights (without modifying it)
     model = create_model('vit_base_patch16_224', pretrained=pretrained, **kwargs)
 
-    # Sostituisci tutti i blocchi di attenzione
+    # Replace all attention blocks
     for block in model.blocks:
         old_attn = block.attn
         block.attn = CustomAttention(
             dim=old_attn.qkv.in_features,
             num_heads=old_attn.num_heads,
             qkv_bias=hasattr(old_attn.qkv, 'bias') and old_attn.qkv.bias is not None,
-            proj_bias=True,  # o False se il tuo vecchio modello così era
+            proj_bias=True, 
             norm_layer=partial(nn.LayerNorm, eps=1e-6),
         )
 
@@ -115,21 +115,21 @@ def custom_vit_base_patch16_224(pretrained=False, **kwargs):
 @register_model
 
 def custom_vit_base_patch16_224_mae(pretrained=False, **kwargs):
-    # Elimina parametri che non servono al tuo modello custom
+    # Eliminate parameters that do not serve your custom model
     kwargs.pop('pretrained_cfg', None)
     kwargs.pop('pretrained_cfg_overlay', None)
     kwargs.pop('cache_dir', None)
-    # Carica il modello MAE base con i pesi (senza modificarlo)
+    # Upload the basic MAE model with weights (without modifying it)
     model = create_model('vit_base_patch16_224.mae', pretrained=pretrained, **kwargs)
 
-    # Sostituisci tutti i blocchi di attenzione
+    # Replace all attention blocks
     for block in model.blocks:
         old_attn = block.attn
         block.attn = CustomAttention(
             dim=old_attn.qkv.in_features,
             num_heads=old_attn.num_heads,
             qkv_bias=hasattr(old_attn.qkv, 'bias') and old_attn.qkv.bias is not None,
-            proj_bias=True,  # o False se il tuo vecchio modello così era
+            proj_bias=True,  
             norm_layer=partial(nn.LayerNorm, eps=1e-6),
         )
 
@@ -138,21 +138,21 @@ def custom_vit_base_patch16_224_mae(pretrained=False, **kwargs):
 @register_model
 
 def custom_deit_base_patch16_224(pretrained=False, **kwargs):
-    # Elimina parametri che non servono al tuo modello custom
+    # Eliminate parameters that do not serve your custom model
     kwargs.pop('pretrained_cfg', None)
     kwargs.pop('pretrained_cfg_overlay', None)
     kwargs.pop('cache_dir', None)
-    # Carica il modello MAE base con i pesi (senza modificarlo)
+    # Upload the deit model with weights (without modifying it)
     model = create_model('deit_base_patch16_224', pretrained=pretrained, **kwargs)
 
-    # Sostituisci tutti i blocchi di attenzione
+    # Replace all attention blocks
     for block in model.blocks:
         old_attn = block.attn
         block.attn = CustomAttention(
             dim=old_attn.qkv.in_features,
             num_heads=old_attn.num_heads,
             qkv_bias=hasattr(old_attn.qkv, 'bias') and old_attn.qkv.bias is not None,
-            proj_bias=True,  # o False se il tuo vecchio modello così era
+            proj_bias=True,  
             norm_layer=partial(nn.LayerNorm, eps=1e-6),
         )
 
@@ -162,14 +162,14 @@ def custom_deit_base_patch16_224(pretrained=False, **kwargs):
 @register_model
 
 def custom_pit_b_224(pretrained=False, **kwargs):
-    # Elimina parametri che non servono al tuo modello custom
+    # Eliminate parameters that do not serve your custom model
     kwargs.pop('pretrained_cfg', None)
     kwargs.pop('pretrained_cfg_overlay', None)
     kwargs.pop('cache_dir', None)
-    # Carica il modello MAE base con i pesi (senza modificarlo)
+    # Upload the deit model with weights (without modifying it)
     model = create_model('pit_b_224', pretrained=pretrained, **kwargs)
 
-    # Sostituisci tutti i blocchi di attenzione
+    # Replace all attention blocks
     for transformer in model.transformers:
         for block in transformer.blocks:
             old_attn = block.attn
@@ -177,7 +177,7 @@ def custom_pit_b_224(pretrained=False, **kwargs):
                 dim=old_attn.qkv.in_features,
                 num_heads=old_attn.num_heads,
                 qkv_bias=hasattr(old_attn.qkv, 'bias') and old_attn.qkv.bias is not None,
-                proj_bias=True,  # o False se il tuo vecchio modello così era
+                proj_bias=True,  
                 norm_layer=partial(nn.LayerNorm, eps=1e-6),
             )
 

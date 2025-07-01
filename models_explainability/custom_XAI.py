@@ -274,7 +274,7 @@ class BaseCAM:
             augmented_tensor = transform.augment_image(input_tensor)
             cam = self.forward(augmented_tensor, targets, eigen_smooth)
 
-            # The ttach library expects a tensor of size BxCxHxW
+            # The attach library expects a tensor of size BxCxHxW
             cam = cam[:, None, :, :]
             cam = torch.from_numpy(cam)
             cam = transform.deaugment_mask(cam)
@@ -324,7 +324,6 @@ class GradCAM_with_grad(BaseCAM):
             target_layers,
             reshape_transform,
             detach=False)
-        #self.activations_and_grads = ActivationsAndGradients(self.model, self.target_layers, self.reshape_transform, self.detach)
         
 
     def get_cam_weights(self,
@@ -336,7 +335,6 @@ class GradCAM_with_grad(BaseCAM):
         # 2D image
     
         if len(grads.shape) == 4:
-            #return np.mean(grads, axis=(2, 3))
             return grads.mean(dim=(2, 3)) #np.mean(grads, axis=(2, 3))
         
         # 3D image
@@ -461,26 +459,24 @@ class ScoreCAM_with_grad(BaseCAM):
             class_scores = []
 
             for c in range(feature_maps.size(0)):
-                # Prepara il weighted input
+
                 weighted_input = input_tensor[idx:idx+1] * feature_maps[c:c+1]
                 weighted_input.requires_grad_(True)
 
                 # Forward pass
                 output = self.model(weighted_input)
 
-                # Calcola score target (supponiamo sia scalare)
                 score = target(output)
 
-                # Usiamo autograd per calcolare il gradiente rispetto all'input
+                # Computation of gradient
                 grad = torch.autograd.grad(
                     outputs=score,
                     inputs=weighted_input,
-                    retain_graph=True,      # Non accumuliamo grafo extra
-                    create_graph=True        # Manteniamo differenziabilità a monte
+                    retain_graph=True,      
+                    create_graph=True        
                 )[0]
 
-                # Usiamo lo score (o potenzialmente un summary del grad) come peso
-                class_scores.append(score)  # oppure class_scores.append(grad.mean()) per alternative
+                class_scores.append(score) 
 
                 # Cleanup
                 del grad, score, output, weighted_input
@@ -534,13 +530,13 @@ class XGradCAM_with_grad(BaseCAM):
         """
         eps = 1e-7
 
-        # Calcola somma delle attivazioni per ogni canale
+        # Calculate sum of activations for each channel
         sum_activations = activations.sum(dim=(2, 3), keepdim=True)  # [B, C, 1, 1]
 
-        # Evita divisione per zero
+        # Avoid division by zero
         norm = grads * activations / (sum_activations + eps)  # [B, C, H, W]
 
-        # Somma spaziale per ottenere i pesi
+        # Spatial summation to obtain weights
         weights = norm.sum(dim=(2, 3))  # [B, C]
 
         return weights
@@ -584,10 +580,10 @@ class GradCAM_plus_plus_with_grad(BaseCAM):
         denominator = 2 * grads_power_2 + grads_power_3 * sum_activations + eps  # [B, C, H, W]
         aij = grads_power_2 / denominator                                          # [B, C, H, W]
 
-        # Azzeriamo aij dove il gradiente è esattamente zero
+        # We reset aij where the gradient is exactly zero
         aij = torch.where(grads != 0, aij, torch.zeros_like(aij))  # [B, C, H, W]
 
-        # Grad-CAM++: ReLU sui gradienti e pesatura con aij
+        # Grad-CAM++: ReLU on gradients and weighing with aij
         weights = torch.relu(grads) * aij                         # [B, C, H, W]
         weights = weights.sum(dim=(2, 3))                         # [B, C]
 
@@ -599,7 +595,6 @@ class FinerCAM:
         self.compute_input_gradient = self.base_cam.compute_input_gradient
         self.uses_gradients = self.base_cam.uses_gradients
         self.detach = False
-        #self.base_cam.detach = False
         self.activations_and_grads = ActivationsAndGradients(self.base_cam.model, self.base_cam.target_layers, self.base_cam.reshape_transform, self.detach)
         
 
@@ -628,7 +623,6 @@ class FinerCAM:
 
             loss = sum([target(output) for target, output in zip(targets, outputs)])
 
-            # Questo mantiene la connessione all'input_tensor
             grads = torch.autograd.grad(
                 outputs=loss,
                 inputs=input_tensor,
@@ -641,10 +635,10 @@ class FinerCAM:
         
 
         cam_per_layer = self.base_cam.compute_cam_per_layer(input_tensor, targets, eigen_smooth)
-        # cam_per_layer deve contenere solo tensori PyTorch, non .detach() o .numpy()
+       
         final_cam = self.base_cam.aggregate_multi_layers(cam_per_layer)
 
-        return final_cam  # Tensor collegato all’input
+        return final_cam  
 
     
 
