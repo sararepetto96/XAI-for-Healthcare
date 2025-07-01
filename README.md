@@ -1,6 +1,6 @@
 # Evaluating the Robustness of Explainable AI in Medical Image Recognition Under Natural and Adversarial Data Corruption
 
-This repository contains the official PyTorch implementation for the paper:** Evaluating the Robustness of Explainable AI in Medical Image Recognition Under Natural and Adversarial Data Corruption**. 
+This repository contains the official PyTorch implementation for the paper: **Evaluating the Robustness of Explainable AI in Medical Image Recognition Under Natural and Adversarial Data Corruption**. 
 
 
 ## Dependencies and Reproducibility
