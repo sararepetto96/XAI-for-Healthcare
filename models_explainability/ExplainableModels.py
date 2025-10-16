@@ -659,10 +659,10 @@ class ExplainableModel():
                     pool = ctx.Pool(1)
 
                 # Define wrapper function if needed externally
-                r = pool.apply_async(self.applyXAI, args=(algorithm, image_tensor, torch.Tensor(labels).int()))
+                r = pool.apply_async(self.applyXAI, args=(algorithm, image_tensor, torch.Tensor(labels)))
                 attributions = r.get()
             else:
-                attributions = self.applyXAI(algorithm, image_tensor, torch.Tensor(labels).int())
+                attributions = self.applyXAI(algorithm, image_tensor, torch.Tensor(labels))
 
             for j in range(attributions.shape[0]):
                 attributions_tot[names[j]] = attributions[j].numpy().astype(np.float32)
@@ -755,7 +755,6 @@ class ExplainableModel():
             new_process: bool = False,
             dataset_subset_size=100,
             ) -> None:
-        
         #save metrics only if default parameters are used
         default_params = (expl_loss_function == "topk" and loss_function == "ce" and n_steps == 100 and lr == 0.1 and dataset_subset_size == 100)
         
